@@ -41,9 +41,9 @@ void* wm_ciscat_main(wm_ciscat *ciscat) {
     wm_ciscat_eval *eval;
     time_t time_start = 0;
     time_t time_sleep = 0;
-    char *cis_path;
-    char *jre_path;
-    char *env_var;
+    char *cis_path = NULL;
+    char *jre_path = NULL;
+    char *env_var = NULL;
 
     os_calloc(OS_MAXSTR, sizeof(char), cis_path);
 
@@ -51,8 +51,11 @@ void* wm_ciscat_main(wm_ciscat *ciscat) {
 
     if (ciscat->java_path){
         os_calloc(OS_MAXSTR, sizeof(char), jre_path);
-        env_var = getenv("PATH");
-        snprintf(jre_path, OS_MAXSTR - 1, "%s:%s", env_var, ciscat->java_path);
+        if ((env_var = getenv("PATH")) == NULL){
+            snprintf(jre_path, OS_MAXSTR - 1, "%s", ciscat->java_path);
+        } else {
+            snprintf(jre_path, OS_MAXSTR - 1, "%s:%s", env_var, ciscat->java_path);
+        }
         if(setenv("PATH", jre_path, 1) < 0)
             mtwarn(WM_CISCAT_LOGTAG, "Unable to define JRE location: %s", strerror(errno));
     }
@@ -317,8 +320,8 @@ void wm_ciscat_parser_xml(){
     char file[OS_MAXSTR];
     FILE *fp;
     char string[OS_MAXSTR];
-    cJSON *object;
-    cJSON *data;
+    cJSON *object = NULL;
+    cJSON *data = NULL;
     char *pos;
     int i;
 
@@ -334,9 +337,9 @@ void wm_ciscat_parser_xml(){
 
     if ((fp = fopen(file, "r"))){
 
-        while (fgets(string, OS_MAXSTR, fp) != NULL){
+        while (fgets(string, OS_MAXSTR, fp) != NULL) {
 
-            if (strncmp(string, "********", 8)){
+            if (strncmp(string, "********", 8)) {
 
                 // Remove '\n' from strings
 
@@ -436,17 +439,12 @@ void wm_ciscat_parser_xml(){
                     cJSON_Delete(object);
 
                     free(msg);
-
-                } else
-                    continue;
+                }
 
                 for (i=0; parts[i]; i++){
                     free(parts[i]);
                 }
                 free(parts);
-
-            } else {
-                continue;
             }
         }
         fclose(fp);
