@@ -43,7 +43,6 @@ void* wm_ciscat_main(wm_ciscat *ciscat) {
     time_t time_sleep = 0;
     char *cis_path = NULL;
     char *jre_path = NULL;
-    char *env_var = NULL;
 
     os_calloc(OS_MAXSTR, sizeof(char), cis_path);
 
@@ -51,7 +50,10 @@ void* wm_ciscat_main(wm_ciscat *ciscat) {
 
     if (ciscat->java_path){
         os_calloc(OS_MAXSTR, sizeof(char), jre_path);
-        if ((env_var = getenv("PATH")) == NULL){
+
+        char *env_var = getenv("PATH");
+
+        if (!env_var) {
             snprintf(jre_path, OS_MAXSTR - 1, "%s", ciscat->java_path);
         } else {
             snprintf(jre_path, OS_MAXSTR - 1, "%s:%s", env_var, ciscat->java_path);
@@ -115,6 +117,9 @@ void* wm_ciscat_main(wm_ciscat *ciscat) {
         // If time_sleep=0, yield CPU
         sleep(time_sleep);
     }
+
+    free(cis_path);
+    free(jre_path);
 
     return NULL;
 }
